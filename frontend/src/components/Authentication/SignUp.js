@@ -9,8 +9,8 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../helpers/axios";
 
 const SignUp = () => {
   const [show, setShow] = useState();
@@ -55,7 +55,6 @@ const SignUp = () => {
           setLoading(false);
         })
         .catch((err) => {
-          console.log(err);
           setLoading(false);
         });
     } else {
@@ -96,22 +95,18 @@ const SignUp = () => {
       return;
     }
     try {
-      const config = {
-        headers: {
-          "Content-type": "application/json",
-        },
-      };
-      const res = await axios.post(
-        "http://localhost:7600/api/user/signUp",
+      
+      const res = await axiosInstance.post(
+        "/user/signUp",
         {
           name,
           email,
           password,
           pic,
         },
-        config
+      
       );
-      console.log({ res });
+      
       toast({
         title: "Registration Successful",
         status: "success",
@@ -119,14 +114,14 @@ const SignUp = () => {
         isClosable: true,
         position: "bottom",
       });
-      localStorage.setItem("userInfo", JSON.stringify(res));
+      localStorage.setItem("token", JSON.stringify(res.data));
       setLoading(false);
-      navigate.push("/chats");
+      navigate("/chats");
     } catch (error) {
-      console.log({ error });
+     
       toast({
         title: "Error Occured!",
-        description: error.response.data,
+        description: error.response,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -146,7 +141,7 @@ const SignUp = () => {
           }}
         />
       </FormControl>
-      <FormControl id="email" isRequired>
+      <FormControl id="emails" isRequired>
         <FormLabel>Email</FormLabel>
         <Input
           placeholder="Enter Your Email"
@@ -155,7 +150,7 @@ const SignUp = () => {
           }}
         />
       </FormControl>
-      <FormControl id="password" isRequired>
+      <FormControl id="passwords" isRequired>
         <FormLabel>Password</FormLabel>
         <InputGroup>
           <Input

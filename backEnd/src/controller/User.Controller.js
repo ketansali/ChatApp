@@ -10,10 +10,10 @@ exports.signUp = asyncHandler(async (req, res) => {
       throw new Error("Please Enter all the field");
     }
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: {$regex:email,$options:'i'} });
 
     if (userExists) {
-      res.status(400).json("User already exists");
+      return res.status(400).json("User already exists");
     }
     const user = await User.create({
       name,
@@ -67,3 +67,15 @@ exports.signIn = asyncHandler(async (req, res) => {
     throw new Error(err);
   }
 });
+exports.getUsers = asyncHandler(async(req,res)=>{
+  const keyword = req.query.search
+    ? {
+        $or: [
+          { name: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ],
+      }
+    : {};
+  const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+  res.send(users);
+})

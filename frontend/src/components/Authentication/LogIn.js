@@ -6,18 +6,70 @@ import {
   InputGroup,
   InputRightElement,
   VStack,
+  useToast
 } from "@chakra-ui/react";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import axiosInstance from "../../helpers/axios";
 
 const LogIn = () => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [show, setShow] = useState();
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+  const navigate = useNavigate();
   const handleClick = () => {
     setShow(!show);
   };
 
-  const submitHandler = () => {};
+  const submitHandler = async () => {
+    setLoading(true);
+    if (!email || !password) {
+      toast({
+        title: "Please Select all field!",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
+    }
+    try {
+      
+      const res = await axiosInstance.post(
+        "/user/signIn",
+        {
+          email,
+          password,
+        }
+        
+      );
+      toast({
+        title: "LogIn Successful",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      localStorage.setItem("token", JSON.stringify(res.data));
+      setLoading(false);
+      navigate("/chats");
+    } catch (error) {
+      const {data} = error.response
+      toast({
+        title: "Error Occured!",
+        description: data.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+    }
+  };
   return (
     <VStack>
       <FormControl id="email" isRequired>
@@ -52,6 +104,7 @@ const LogIn = () => {
         width="100%"
         style={{ marginTop: 15 }}
         onClick={submitHandler}
+        isLoading={loading}
       >
         LogIn
       </Button>
